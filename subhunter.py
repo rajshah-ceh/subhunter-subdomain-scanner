@@ -1,48 +1,61 @@
 #!/usr/bin/env python3
 
-import requests
+import subprocess
 import sys
-import concurrent.futures
+import os
 
-# Wordlist of common subdomains
-subdomains = [
-"www","mail","ftp","webmail","test","dev","api","blog","stage",
-"beta","admin","portal","vpn","m","mobile","support","shop",
-"dashboard","secure","server","cloud","app"
-]
+def run(cmd):
+    print(f"\n[+] Running: {cmd}\n")
+    subprocess.run(cmd, shell=True)
 
-TIMEOUT = 3
-THREADS = 20
 
-def check_subdomain(sub, domain):
-    url = f"http://{sub}.{domain}"
+def check_tool(tool):
+    return subprocess.call(f"which {tool}",
+                           shell=True,
+                           stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL) == 0
 
-    try:
-        r = requests.get(url, timeout=TIMEOUT)
 
-        if r.status_code < 400:
-            print(f"[+] Found: {url}")
+def check_dependencies():
 
-            with open("found_subdomains.txt","a") as f:
-                f.write(url + "\n")
+    tools = ["subfinder", "amass", "httpx"]
 
-    except:
-        pass
+    for tool in tools:
+        if not check_tool(tool):
+            print(f"[!] {tool} not installed")
+            sys.exit()
+
+    print("[+] All tools installed")
 
 
 def main():
 
     if len(sys.argv) != 2:
-        print("Usage: python3 subhunter.py domain.com")
+        print("Usage: python3 subrecon.py domain.com")
         sys.exit()
 
     domain = sys.argv[1]
 
-    print(f"\nScanning subdomains for {domain}\n")
+    os.makedirs("output", exist_ok=True)
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=THREADS) as executor:
-        for sub in subdomains:
-            executor.submit(check_subdomain, sub, domain)
+    check_dependencies()
+
+    print(f"\n[+] Starting Subdomain Recon for {domain}")
+
+    # Subfinder
+    run(f"subfinder -d {domain} -silent -o output/subfinder.txt")
+
+    # Amass
+    run(f"amass enum -passive -d {domain} -o output/amass.txt")
+
+    # Merge results
+    run("cat output/*.txt | sort -u > output/all_subdomains.txt")
+
+    # Check live domains
+    run("httpx -l output/all_subdomains.txt -silent -o output/live_subdomains.txt")
+
+    print("\n[+] Recon Completed")
+    print("[+] Results saved in output/ folder")
 
 
 if __name__ == "__main__":

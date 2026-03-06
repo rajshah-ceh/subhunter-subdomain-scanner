@@ -1,31 +1,34 @@
-# SubHunter - Subdomain Scanner
+# SubRecon – Subdomain Recon Automation
 
-SubHunter is a Python-based tool used to discover subdomains of a target domain.
+SubRecon is a Python-based automation tool that combines powerful reconnaissance tools to discover subdomains and identify live hosts.
+
+## Tools Used
+
+- Subfinder
+- Amass
+- httpx
 
 ## Features
 
-- Fast subdomain discovery
-- Multi-threaded scanning
-- Simple and lightweight
-- Saves discovered subdomains automatically
+- Automated subdomain enumeration
+- Passive reconnaissance
+- Duplicate removal
+- Live host detection
+- Organized output
 
 ## Installation
 
-git clone https://github.com/rajshah-ceh/subhunter-subdomain-scanner.git
+git clone https://github.com/rajshah-ceh/subhunter.git
 
-cd subhunter-subdomain-scanner
-
-pip install -r requirements.txt
+cd subrecon
 
 ## Usage
 
-python3 subhunter.py example.com
+python3 subrecon.py example.com
 
 ## Output
 
-Discovered subdomains will be saved in:
-
-found_subdomains.txt
+Results will be stored in the `output` directory.
 
 ## Author
 
